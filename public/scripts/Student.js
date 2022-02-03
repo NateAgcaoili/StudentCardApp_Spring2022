@@ -79,7 +79,7 @@ class StudentModel {
 				const element = document.querySelector('#root');
 				let event = new CustomEvent('StudentDeleted', {detail:'success'});
 				element.dispatchEvent(event);
-				location.reload(); //Updates page
+				app = new StudentController(new StudentModel(), new StudentView()); //Updates page
 			}
 
 		};
@@ -114,8 +114,7 @@ class StudentModel {
 		xhttp.open("POST", "http://localhost:3050/api/student/create", true);
 		xhttp.setRequestHeader("Content-type", "application/json");
 		xhttp.send(JSON.stringify(newStudent));
-		location.reload();
-
+		app = new StudentController(new StudentModel(), new StudentView()); //Updates page to reflect new student added
 	}
 
 }
@@ -133,7 +132,8 @@ class StudentView {
 		
 //		consol.log(studentData);
 		this.studentData = studentData;
-		
+		$("#root").html(""); //clears current data displayed
+
 		this.app = viewHelper.getElement('#root');
 		let title = this.createTitle();
 		let cards = this.createCards();
