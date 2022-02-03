@@ -69,7 +69,7 @@ class StudentModel {
 		xhttp.send();
 	}
 
-	deleteStudent(id){
+	deleteStudent(id) {
 		console.log('In DeleteStudent()');
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
@@ -79,7 +79,7 @@ class StudentModel {
 				const element = document.querySelector('#root');
 				let event = new CustomEvent('StudentDeleted', {detail:'success'});
 				element.dispatchEvent(event);
-			 
+				location.reload(); //Updates page
 			}
 
 		};
@@ -89,6 +89,33 @@ class StudentModel {
 		xhttp.open("DELETE", url, true);
 		xhttp.setRequestHeader("Content-type", "application/json");
 		xhttp.send();
+	}
+
+	addStudent() {
+		console.log('in AddStudent()');
+		let newStudent = {
+			id: 'TBD', //ID will be assigned in the backend
+			name: document.getElementById('nameInput').value,
+			class: document.getElementById('classInput').value,
+			major: document.getElementById('majorInput').value
+		}
+
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+				
+				const eleement = document.querySelector('#root');
+				let event = new CustomEvent('StudentAdded', {detail:'success'});
+				element.dispatchEvent(event);
+			}
+		};
+
+		xhttp.open("POST", "http://localhost:3050/api/student/create", true);
+		xhttp.setRequestHeader("Content-type", "application/json");
+		xhttp.send(JSON.stringify(newStudent));
+		location.reload();
+
 	}
 
 }
@@ -130,7 +157,6 @@ class StudentView {
 		let cardDeck = viewHelper.createElement('div', ['card-deck']);
 		
 		for(var student of this.studentData){
-		
 			let card = viewHelper.createElement('div', ['card']);
 			card.setAttribute('onClick', 'app.handleCardClick('+student.id+');');
 			
@@ -143,8 +169,22 @@ class StudentView {
 			cardBody.append(cardTitle, cardText);
 			card.append(cardBody);
 			cardDeck.append(card);
-		
+
 		}
+		
+		//Creating student add card
+		let addStudentCard = viewHelper.createElement('div', ['card']);
+		addStudentCard.setAttribute('onClick', 'app.handleAddCardClick();');
+		let addStudentCardBody = viewHelper.createElement('div', ['card-body']);
+		let addStudentCardTitle = viewHelper.createElement('div', ['card-title']);
+		let addStudentCardText = viewHelper.createElement('p', ['card-text']);
+		
+		addStudentCardTitle.textContent = "Add Student";
+		addStudentCardText.textContent = "+";
+		addStudentCardBody.append(addStudentCardTitle, addStudentCardText);
+		addStudentCard.append(addStudentCardBody);
+		cardDeck.append(addStudentCard);
+
 		return cardDeck;
 	}
 
@@ -172,6 +212,28 @@ class StudentView {
 
 		const modal = document.querySelector('#studentModal');
 		$('#studentModal').modal('toggle');
+
+	}
+
+	createAddStudentModal(){
+		let btnFooterCancel = viewHelper.createElement('button', ['btn', 'btn-secondary']);
+		btnFooterCancel.setAttribute('type', 'button');
+		btnFooterCancel.setAttribute('data-dismiss', 'modal');
+		btnFooterCancel.textContent = 'Cancel';
+		let btnFooterSave = viewHelper.createElement('button', ['btn', 'btn-primary']);
+		btnFooterSave.setAttribute('type', 'button');
+		btnFooterSave.setAttribute('data-dismiss', 'modal');
+		btnFooterSave.textContent = 'Save';
+		btnFooterSave.setAttribute('onClick', 'app.handleStudentAdded();');
+		let modalFooter = viewHelper.getElement("#addStudentModalFooter");
+		modalFooter.replaceChildren();
+		modalFooter.append(btnFooterCancel, btnFooterSave);
+
+		//Clear text fields when modal closes
+		$('#addStudentModal').on('hidden.bs.modal', function(){
+			$(this).find('form')[0].reset();
+		});
+		 $('#addStudentModal').modal('toggle');
 
 	}
 
@@ -232,6 +294,11 @@ class StudentController {
 		this.view.createStudentModal(id);
 	}
 
+	handleAddCardClick() {
+		console.log('add student clicked');
+		this.view.createAddStudentModal();
+	}
+
 	handleDeleteCard(id) {
 		console.log('modal ' + id + ' delete');
 		this.model.deleteStudent(id);
@@ -240,6 +307,12 @@ class StudentController {
 	handleStudentDeleted() {
 		const modal = document.querySelector('#studentModal');
 		$('#studentModal').modal('toggle');
+	}
+
+	handleStudentAdded() {
+		if(document.getElementById('nameInput').value != "" && document.getElementById('classInput').value != "" && document.getElementById('majorInput').value != "") {
+			this.model.addStudent();
+		}
 	}
 
 

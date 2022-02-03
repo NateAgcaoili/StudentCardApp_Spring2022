@@ -28,16 +28,17 @@ exports.student_delete = function(req, res) {
 
 //NOT IMPLEMENTED
 
-// Display student create form on GET.
+/*// Display student create form on GET.
 exports.student_create_get = function(req, res) {
     res.send('NOT IMPLEMENTED: student create GET');
-};
+};*/
 
 // Handle student create on POST.
 exports.student_create_post = function(req, res) {
     //if the data is JSON, access the data using req.body.<field> ie. req.body.name
-    console.log(req.body);
-    res.send('NOT IMPLEMENTED: student create POST');
+    studentModel.addNewStudent(req.body);
+    result = {result:'success'}
+    res.send(result);
 };
 
 // Display student delete form on GET.

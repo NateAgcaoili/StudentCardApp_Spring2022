@@ -3,6 +3,7 @@
 class StudentModel {
 	constructor() {
 		this.initialize();
+		this.currentId = this.studentList.length; //Determining last used ID
 	}
 
 	//initialize the studentList with students
@@ -41,7 +42,12 @@ class StudentModel {
 	deleteStudentById(studentId) {
 		this.studentList = this.studentList.filter(function(student){return student.id != studentId});
 	}
-	
+
+	//add new student to studentList
+	addNewStudent(newStudent) {
+		newStudent.id = ++this.currentId; //Assigning new student ID as currentId incremented
+		this.studentList.push(newStudent);
+	}	
 
 
 }
