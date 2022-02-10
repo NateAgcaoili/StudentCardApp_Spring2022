@@ -47,7 +47,14 @@ class StudentModel {
 	addNewStudent(newStudent) {
 		newStudent.id = ++this.currentId; //Assigning new student ID as currentId incremented
 		this.studentList.push(newStudent);
-	}	
+	}
+	
+	updateStudent(updatedStudent) {
+		let studentToUpdate = this.studentList.find(student => student.id === updatedStudent.id);
+		studentToUpdate.name = updatedStudent.name;
+		studentToUpdate.class = updatedStudent.class;
+		studentToUpdate.major = updatedStudent.major;
+	}
 
 
 }

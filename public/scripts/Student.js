@@ -117,6 +117,34 @@ class StudentModel {
 		app = new StudentController(new StudentModel(), new StudentView()); //Updates page to reflect new student added
 	}
 
+	editStudent(id) {
+		console.log('in EditStudent()');
+		let updatedStudent = {
+			id: id,
+			name: document.getElementById('nameInput').value,
+			class: document.getElementById('classInput').value,
+			major: document.getElementById('majorInput').value
+		}
+		console.log(JSON.stringify(updatedStudent));
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+				
+				const eleement = document.querySelector('#root');
+				let event = new CustomEvent('StudentUpdated', {detail:'success'});
+				element.dispatchEvent(event);
+			}
+		};
+
+		let url = `http://localhost:3050/api/student/${id}/update`;
+
+		xhttp.open("POST", url, true);
+		xhttp.setRequestHeader("Content-type", "application/json");
+		xhttp.send(JSON.stringify(updatedStudent));
+		app = new StudentController(new StudentModel(), new StudentView()); //Updates page to reflect student updated
+	}
+
 }
 
 class StudentView {
@@ -206,9 +234,14 @@ class StudentView {
 		btnFooterClose.setAttribute('type', 'button');
 		btnFooterClose.setAttribute('data-dismiss', 'modal');
 		btnFooterClose.textContent = 'Close';
+		let btnFooterEdit = viewHelper.createElement('button', ['btn','btn-secondary']);
+		btnFooterEdit.setAttribute('type', 'button');
+		btnFooterEdit.setAttribute('data-dismiss', 'modal');
+		btnFooterEdit.textContent = 'Edit';
+		btnFooterEdit.setAttribute('onClick', 'app.handleStudentEditClick('+id+');');
 		let modalFooter = viewHelper.getElement('#studentModalFooter');
 		modalFooter.replaceChildren();
-		modalFooter.append(btnFooterClose);
+		modalFooter.append(btnFooterEdit, btnFooterClose);
 
 		const modal = document.querySelector('#studentModal');
 		$('#studentModal').modal('toggle');
@@ -216,6 +249,8 @@ class StudentView {
 	}
 
 	createAddStudentModal(){
+		let modalTitle = viewHelper.getElement('#addStudentModalLabel');
+		modalTitle.textContent = 'Add Student';
 		let btnFooterCancel = viewHelper.createElement('button', ['btn', 'btn-secondary']);
 		btnFooterCancel.setAttribute('type', 'button');
 		btnFooterCancel.setAttribute('data-dismiss', 'modal');
@@ -228,6 +263,35 @@ class StudentView {
 		let modalFooter = viewHelper.getElement("#addStudentModalFooter");
 		modalFooter.replaceChildren();
 		modalFooter.append(btnFooterCancel, btnFooterSave);
+
+		//Clear text fields when modal closes
+		$('#addStudentModal').on('hidden.bs.modal', function(){
+			$(this).find('form')[0].reset();
+		});
+		 $('#addStudentModal').modal('toggle');
+
+	}
+
+	createEditStudentModal(id){
+		let student = this.studentData.find(x=>x.id === id);
+		let modalTitle = viewHelper.getElement('#addStudentModalLabel');
+		modalTitle.textContent = 'Edit Student';
+		let btnFooterCancel = viewHelper.createElement('button', ['btn', 'btn-secondary']);
+		btnFooterCancel.setAttribute('type', 'button');
+		btnFooterCancel.setAttribute('data-dismiss', 'modal');
+		btnFooterCancel.textContent = 'Cancel';
+		let btnFooterSave = viewHelper.createElement('button', ['btn', 'btn-primary']);
+		btnFooterSave.setAttribute('type', 'button');
+		btnFooterSave.setAttribute('data-dismiss', 'modal');
+		btnFooterSave.textContent = 'Save';
+		btnFooterSave.setAttribute('onClick', 'app.handleStudentEditted('+id+');');
+		let modalFooter = viewHelper.getElement("#addStudentModalFooter");
+		modalFooter.replaceChildren();
+		modalFooter.append(btnFooterCancel, btnFooterSave);
+
+		document.getElementById('nameInput').value = student.name;
+		document.getElementById('classInput').value = student.class;
+		document.getElementById('majorInput').value = student.major;
 
 		//Clear text fields when modal closes
 		$('#addStudentModal').on('hidden.bs.modal', function(){
@@ -312,6 +376,18 @@ class StudentController {
 	handleStudentAdded() {
 		if(document.getElementById('nameInput').value != "" && document.getElementById('classInput').value != "" && document.getElementById('majorInput').value != "") {
 			this.model.addStudent();
+		}
+	}
+
+	handleStudentEditClick(id) {
+		console.log('edit ' + id + 'clicked');
+		this.view.createEditStudentModal(id);
+	}
+
+	handleStudentEditted(id) {
+		console.log('save ' + id + 'clicked');
+		if(document.getElementById('nameInput').value != "" && document.getElementById('classInput').value != "" && document.getElementById('majorInput').value != "") {
+			this.model.editStudent(id);
 		}
 	}
 
